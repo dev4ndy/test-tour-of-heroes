@@ -39,7 +39,7 @@ export class HeroService {
           const outcome = h ? `fetched` : `did not find`;
           this.log(`${outcome} hero id=${id}`);
         }),
-        catchError(this.handleError<Hero>(`getHero id=${id}`))
+        catchError(this.handleError<Hero>('Hero', `getHero id=${id}`, {} as Hero))
       );
   }
 
@@ -49,7 +49,7 @@ export class HeroService {
   addHero (hero: Hero): Observable<Hero> {
     return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
       tap((hero: Hero) => this.log(`added hero w/ id=${hero.id}`)),
-      catchError(this.handleError<Hero>('addHero'))
+      catchError(this.handleError<Hero>('Hero','addHero', {} as Hero))
     );
   }
   /** DELETE: delete the hero from the server */
@@ -59,7 +59,7 @@ export class HeroService {
 
     return this.http.delete<Hero>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted hero id=${id}`)),
-      catchError(this.handleError<Hero>('deleteHero'))
+      catchError(this.handleError<Hero>('Hero',  'deleteHero', {} as Hero))
     );
   }
 
@@ -67,7 +67,7 @@ export class HeroService {
   updateHero (hero: Hero): Observable<any> {
     return this.http.put(this.heroesUrl, hero, httpOptions).pipe(
       tap(_ => this.log(`updated hero id=${hero.id}`)),
-      catchError(this.handleError<any>('updateHero'))
+      catchError(this.handleError<any>('Hero', 'updateHero', {} as Hero))
     );
   }
    /**
@@ -81,7 +81,7 @@ export class HeroService {
 
     return (error: HttpErrorResponse): Observable<T> => {
       // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error(operation, error); // log to console instead
 
       const message = (error.error instanceof ErrorEvent) ?
         error.error.message :
