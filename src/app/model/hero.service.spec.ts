@@ -5,8 +5,6 @@ import { TestBed, async, fakeAsync } from '@angular/core/testing'
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http'
 import { HeroService } from './hero.service';
 import { Hero } from '.';
-import { throwError, of, Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 
 const httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -239,9 +237,11 @@ describe('Test for heroService', () => {
             req.flush(hero, httpOptionsWith404);
         });
     });
-
+    /**
+     * This test is only cover all code in code-coverage
+     */
     describe('handleError', () => {
-        it('should return observable of type <T>', () => {
+        it('should return a empty result', () => {
             let fError = (callback) => {
                 return callback(new HttpErrorResponse({
                     status: 404,
@@ -255,12 +255,10 @@ describe('Test for heroService', () => {
                         error: new Error('My custom error')
                     })
                 }))
-            }
-            let obsEmptyExpect = (result = {})  => {
-                return (error: HttpErrorResponse) => {return of(result)};
-            };
-            
-            //expect(fError(heroService.handleError())).toBe(fError(obsEmptyExpect({})));
+            }   
+           fError(heroService.handleError()).subscribe(data => 
+                expect(Object.keys(data).length).toBe(0, 'return a empty result')
+           );
         });
     });
 });

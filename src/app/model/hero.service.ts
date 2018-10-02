@@ -91,7 +91,7 @@ export class HeroService {
       this.log(`${serviceName}: ${operation} failed: ${message}`);
 
       // Let the app keep running by returning a safe result.
-      return of( result );
+      return of(result);
     };
 
   }
