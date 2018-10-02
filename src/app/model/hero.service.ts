@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { Hero } from './hero';
@@ -22,7 +22,7 @@ export class HeroService {
     return this.http.get<Hero[]>(this.heroesUrl)
       .pipe(
         tap(heroes => this.log(`fetched heroes`)),
-        catchError(this.handleError('getHeroes'))
+        catchError(this.handleError('Hero', 'getHeroes', []))
       ) as Observable<Hero[]>;
   }
 
@@ -39,7 +39,7 @@ export class HeroService {
           const outcome = h ? `fetched` : `did not find`;
           this.log(`${outcome} hero id=${id}`);
         }),
-        catchError(this.handleError<Hero>(`getHero id=${id}`))
+        catchError(this.handleError<Hero>('Hero', `getHero id=${id}`, {} as Hero))
       );
   }
 
@@ -49,7 +49,7 @@ export class HeroService {
   addHero (hero: Hero): Observable<Hero> {
     return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
       tap((hero: Hero) => this.log(`added hero w/ id=${hero.id}`)),
-      catchError(this.handleError<Hero>('addHero'))
+      catchError(this.handleError<Hero>('Hero','addHero', {} as Hero))
     );
   }
   /** DELETE: delete the hero from the server */
@@ -59,7 +59,7 @@ export class HeroService {
 
     return this.http.delete<Hero>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted hero id=${id}`)),
-      catchError(this.handleError<Hero>('deleteHero'))
+      catchError(this.handleError<Hero>('Hero',  'deleteHero', {} as Hero))
     );
   }
 
@@ -67,26 +67,31 @@ export class HeroService {
   updateHero (hero: Hero): Observable<any> {
     return this.http.put(this.heroesUrl, hero, httpOptions).pipe(
       tap(_ => this.log(`updated hero id=${hero.id}`)),
-      catchError(this.handleError<any>('updateHero'))
+      catchError(this.handleError<any>('Hero', 'updateHero', {} as Hero))
     );
   }
-  /**
+   /**
    * Returns a function that handles Http operation failures.
    * This error handler lets the app continue to run as if no error occurred.
+   * @param serviceName = name of the data service that attempted the operation
    * @param operation - name of the operation that failed
+   * @param result - optional value to return as the observable result
    */
-  private handleError<T> (operation = 'operation') {
-    return (error: HttpErrorResponse): Observable<T> => {
+  handleError<T> (serviceName = '', operation = 'operation', result = {} as T) {
 
+    return (error: HttpErrorResponse): Observable<T> => {
       // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error(operation, error); // log to console instead
 
       const message = (error.error instanceof ErrorEvent) ?
         error.error.message :
        `server returned code ${error.status} with body "${error.error}"`;
 
       // TODO: better job of transforming error for user consumption
-      throw new Error(`${operation} failed: ${message}`);
+      this.log(`${serviceName}: ${operation} failed: ${message}`);
+
+      // Let the app keep running by returning a safe result.
+      return of(result);
     };
 
   }
